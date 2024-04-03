@@ -3,11 +3,14 @@ import EventSchema from "../types/CreateEvents/InterfaceCreateEvents"
 import { GenerateTextSlug } from "../utils/GenerateSlug"
 import { prisma } from "../lib/prisma"
 import { FastifyInstance } from "fastify"
+import { BadRequest } from "./_errors/badRequest"
 
 
 export async function createEvent(app: FastifyInstance){
   app.withTypeProvider<ZodTypeProvider>().post('/events', {
     schema: {
+      summary: 'Create an Event',
+      tags: ['events'],
       body: EventSchema,
     }
   }, async (request, reply) => {
@@ -22,7 +25,7 @@ export async function createEvent(app: FastifyInstance){
     })
   
     if(eventWithSameSlug !== null){
-      throw new Error('Another event with same title already exists.')
+      throw new BadRequest('Another event with same title already exists.')
     }
   
     const event = await prisma.event.create({
